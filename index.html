@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizMaster</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #17172b, #292952);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.app {
+    width: 100%;
+    max-width: 850px;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    padding: 35px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    backdrop-filter: blur(12px);
+}
+
+h1 {
+    font-size: 42px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #bbb;
+    margin-bottom: 30px;
+}
+
+.categories {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.category {
+    border: none;
+    border-radius: 16px;
+    padding: 25px;
+    color: white;
+    background: rgba(255,255,255,0.09);
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.2s;
+}
+
+.category:hover {
+    transform: translateY(-4px);
+    background: rgba(255,255,255,0.16);
+}
+
+.category span {
+    display: block;
+    font-size: 35px;
+    margin-bottom: 10px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.progress {
+    color: #bbb;
+}
+
+.timer {
+    background: rgba(255,255,255,0.1);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.timer.warning {
+    color: #ffb347;
+}
+
+.timer.danger {
+    color: #ff5c5c;
+}
+
+.progressbar {
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.progressfill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s;
+    background: #7c5cff;
+}
+
+.question {
+    font-size: 28px;
+    line-height: 1.3;
+    margin-bottom: 25px;
+}
+
+.answers {
+    display: grid;
+    gap: 12px;
+}
+
+.answer {
+    width: 100%;
+    padding: 18px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.08);
+    color: white;
+    text-align: left;
+    font-size: 17px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.answer:hover:not(:disabled) {
+    background: rgba(255,255,255,0.15);
+    transform: translateX(4px);
+}
+
+.answer.correct {
+    background: rgba(46, 204, 113, 0.25);
+    border-color: #2ecc71;
+}
+
+.answer.wrong {
+    background: rgba(231, 76, 60, 0.25);
+    border-color: #e74c3c;
+}
+
+.answer:disabled {
+    cursor: default;
+}
+
+.score {
+    text-align: center;
+    margin-top: 25px;
+    color: #bbb;
+}
+
+.result {
+    text-align: center;
+}
+
+.result h2 {
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+.bigscore {
+    font-size: 65px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.result p {
+    color: #bbb;
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+.button {
+    border: none;
+    border-radius: 14px;
+    padding: 15px 25px;
+    background: #7c5cff;
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.hidden {
+    display: none;
+}
+
+.highscore {
+    text-align: center;
+    margin-top: 25px;
+    color: #aaa;
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 22px;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+
+    .categories {
+        grid-template-columns: 1fr;
+    }
+
+    .question {
+        font-size: 22px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- STARTSCHERM -->
+    <div class="card" id="startScreen">
+        <h1>QuizMaster</h1>
+        <p class="subtitle">Test je kennis en probeer de hoogste score te halen!</p>
+
+        <div class="categories">
+            <button class="category" onclick="startQuiz('algemeen')">
+                <span>🧠</span>
+                Algemene kennis
+            </button>
+
+            <button class="category" onclick="startQuiz('gaming')">
+                <span>🎮</span>
+                Gaming
+            </button>
+
+            <button class="category" onclick="startQuiz('sport')">
+                <span>⚽</span>
+                Sport
+            </button>
+
+            <button class="category" onclick="startQuiz('technologie')">
+                <span>💻</span>
+                Technologie
+            </button>
+        </div>
+
+        <div class="highscore">
+            Hoogste score: <strong id="highscoreStart">0</strong>
+        </div>
+    </div>
+
+    <!-- QUIZSCHERM -->
+    <div class="card hidden" id="quizScreen">
+
+        <div class="topbar">
+            <div class="progress" id="progress">Vraag 1 van 10</div>
+            <div class="timer" id="timer">15s</div>
+        </div>
+
+        <div class="progressbar">
+            <div class="progressfill" id="progressFill"></div>
+        </div>
+
+        <div class="question" id="question">
+            Vraag...
+        </div>
+
+        <div class="answers" id="answers"></div>
+
+        <div class="score">
+            Score: <strong id="score">0</strong>
+        </div>
+
+    </div>
+
+    <!-- RESULTAAT -->
+    <div class="card hidden result" id="resultScreen">
+        <h2>Quiz afgelopen!</h2>
+
+        <div class="bigscore" id="finalScore">0</div>
+
+        <p id="resultText"></p>
+
+        <button class="button" onclick="goHome()">
+            Terug naar menu
+        </button>
+
+        <div class="highscore">
+            Hoogste score: <strong id="highscoreEnd">0</strong>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+const questionSets = {
+
+    algemeen: [
+        {
+            q: "Wat is de hoofdstad van Nederland?",
+            a: ["Amsterdam", "Rotterdam", "Den Haag", "Utrecht"],
+            correct: 0
+        },
+        {
+            q: "Hoeveel dagen heeft een normaal jaar?",
+            a: ["365", "364", "366", "360"],
+            correct: 0
+        },
+        {
+            q: "Welke planeet staat het dichtst bij de zon?",
+            a: ["Mars", "Venus", "Mercurius", "Aarde"],
+            correct: 2
+        },
+        {
+            q: "Hoeveel zijden heeft een driehoek?",
+            a: ["2", "3", "4", "5"],
+            correct: 1
+        },
+        {
+            q: "Welke kleur krijg je als je blauw en geel mengt?",
+            a: ["Paars", "Groen", "Oranje", "Roze"],
+            correct: 1
+        },
+        {
+            q: "Welk dier staat bekend als de koning van de jungle?",
+            a: ["Tijger", "Olifant", "Leeuw", "Gorilla"],
+            correct: 2
+        },
+        {
+            q: "Hoeveel minuten zitten er in één uur?",
+            a: ["30", "45", "60", "100"],
+            correct: 2
+        },
+        {
+            q: "Welke oceaan is de grootste?",
+            a: ["Atlantische Oceaan", "Indische Oceaan", "Arctische Oceaan", "Stille Oceaan"],
+            correct: 3
+        },
+        {
+            q: "Wat is H2O?",
+            a: ["Zuurstof", "Water", "Waterstof", "Koolstof"],
+            correct: 1
+        },
+        {
+            q: "Hoeveel continenten zijn er meestal volgens de Nederlandse indeling?",
+            a: ["5", "6", "7", "8"],
+            correct: 1
+        }
+    ],
+
+    gaming: [
+        {
+            q: "Welke game bevat de personages Mario en Luigi?",
+            a: ["Minecraft", "Super Mario", "Fortnite", "Roblox"],
+            correct: 1
+        },
+        {
+            q: "Welke game staat bekend om blokken bouwen en mijnen?",
+            a: ["Minecraft", "FIFA", "Rocket League", "Among Us"],
+            correct: 0
+        },
+        {
+            q: "Wat is de naam van het platform waarop veel Roblox-games worden gespeeld?",
+            a: ["Roblox", "Steam", "Epic", "Discord"],
+            correct: 0
+        },
+        {
+            q: "Welke game heeft een Battle Royale-modus genaamd Battle Royale?",
+            a: ["Fortnite", "Euro Truck Simulator", "Minecraft Story Mode", "Portal"],
+            correct: 0
+        },
+        {
+            q: "Welke studio maakte Minecraft oorspronkelijk?",
+            a: ["Mojang", "Valve", "Nintendo", "Ubisoft"],
+            correct: 0
+        },
+        {
+            q: "Waar staat FPS in gaming meestal voor?",
+            a: ["Fast Player System", "Frames Per Second", "First Play Score", "Free Player Server"],
+            correct: 1
+        },
+        {
+            q: "Welke console is van Nintendo?",
+            a: ["Xbox", "PlayStation", "Switch", "Steam Deck"],
+            correct: 2
+        },
+        {
+            q: "Welke game draait om het spelen van voetbal met auto's?",
+            a: ["Rocket League", "Minecraft", "Valorant", "Terraria"],
+            correct: 0
+        },
+        {
+            q: "Welke game heeft de Crewmates?",
+            a: ["Among Us", "Fortnite", "Roblox", "Fall Guys"],
+            correct: 0
+        },
+        {
+            q: "Welke winkel is bekend voor het verkopen van pc-games en heeft een grote gamebibliotheek?",
+            a: ["Steam", "Paint", "Notepad", "Calculator"],
+            correct: 0
+        }
+    ],
+
+    sport: [
+        {
+            q: "Hoeveel spelers staan er bij voetbal per team op het veld?",
+            a: ["9", "10", "11", "12"],
+            correct: 2
+        },
+        {
+            q: "Welke sport wordt gespeeld op Wimbledon?",
+            a: ["Tennis", "Voetbal", "Basketbal", "Hockey"],
+            correct: 0
+        },
+        {
+            q: "Hoeveel ringen staan er op het olympische logo?",
+            a: ["4", "5", "6", "7"],
+            correct: 1
+        },
+        {
+            q: "Welke sport gebruikt een shuttle?",
+            a: ["Tennis", "Badminton", "Hockey", "Rugby"],
+            correct: 1
+        },
+        {
+            q: "Welke sport gebruikt een basket?",
+            a: ["Basketbal", "Voetbal", "Golf", "Formule 1"],
+            correct: 0
+        },
+        {
+            q: "Hoe heet de Nederlandse voetbalcompetitie op het hoogste niveau?",
+            a: ["Eredivisie", "Premier League", "Bundesliga", "La Liga"],
+            correct: 0
+        },
+        {
+            q: "Welke sport rijdt met auto's op circuits?",
+            a: ["Formule 1", "Tennis", "Volleybal", "Zwemmen"],
+            correct: 0
+        },
+        {
+            q: "Welke sport wordt gespeeld met een puck?",
+            a: ["IJshockey", "Golf", "Tennis", "Cricket"],
+            correct: 0
+        },
+        {
+            q: "Hoeveel punten is een vrije worp bij basketbal waard?",
+            a: ["1", "2", "3", "4"],
+            correct: 0
+        },
+        {
+            q: "Welke sport gebruikt een honkbalknuppel?",
+            a: ["Honkbal", "Voetbal", "Tennis", "Rugby"],
+            correct: 0
+        }
+    ],
+
+    technologie: [
+        {
+            q: "Waar staat CPU voor?",
+            a: ["Central Processing Unit", "Computer Power Utility", "Central Program User", "Core Processing USB"],
+            correct: 0
+        },
+        {
+            q: "Waar staat RAM voor?",
+            a: ["Random Access Memory", "Rapid Action Machine", "Read Access Module", "Random Application Mode"],
+            correct: 0
+        },
+        {
+            q: "Welk bedrijf maakt Windows?",
+            a: ["Apple", "Microsoft", "Google", "Sony"],
+            correct: 1
+        },
+        {
+            q: "Welke taal wordt vaak gebruikt voor websites samen met HTML en CSS?",
+            a: ["JavaScript", "Excel", "PowerPoint", "Photoshop"],
+            correct: 0
+        },
+        {
+            q: "Waar staat USB voor?",
+            a: ["Universal Serial Bus", "United System Base", "Universal Software Box", "User Serial Board"],
+            correct: 0
+        },
+        {
+            q: "Welke component is vooral verantwoordelijk voor grafische berekeningen?",
+            a: ["GPU", "RAM", "SSD", "Voeding"],
+            correct: 0
+        },
+        {
+            q: "Wat is een SSD?",
+            a: ["Opslagapparaat", "Processor", "Videokaart", "Besturingssysteem"],
+            correct: 0
+        },
+        {
+            q: "Welke website wordt veel gebruikt om programmeerprojecten te hosten?",
+            a: ["GitHub", "YouTube", "Netflix", "Spotify"],
+            correct: 0
+        },
+        {
+            q: "Wat is Windows 11?",
+            a: ["Een browser", "Een besturingssysteem", "Een processor", "Een game"],
+            correct: 1
+        },
+        {
+            q: "Welke van deze is een webbrowser?",
+            a: ["Chrome", "Windows", "NVIDIA", "Intel"],
+            correct: 0
+        }
+    ]
+};
+
+let questions = [];
+let currentQuestion = 0;
+let score = 0;
+let timer;
+let timeLeft = 15;
+
+let highscore = Number(localStorage.getItem("quizHighscore")) || 0;
+
+document.getElementById("highscoreStart").textContent = highscore;
+document.getElementById("highscoreEnd").textContent = highscore;
+
+function startQuiz(category) {
+
+    questions = [...questionSets[category]];
+
+    // Willekeurige volgorde
+    questions.sort(() => Math.random() - 0.5);
+
+    currentQuestion = 0;
+    score = 0;
+
+    document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("resultScreen").classList.add("hidden");
+    document.getElementById("quizScreen").classList.remove("hidden");
+
+    document.getElementById("score").textContent = score;
+
+    showQuestion();
+}
+
+function showQuestion() {
+
+    clearInterval(timer);
+
+    const question = questions[currentQuestion];
+
+    document.getElementById("progress").textContent =
+        `Vraag ${currentQuestion + 1} van ${questions.length}`;
+
+    document.getElementById("progressFill").style.width =
+        `${((currentQuestion) / questions.length) * 100}%`;
+
+    document.getElementById("question").textContent = question.q;
+
+    const answersContainer = document.getElementById("answers");
+    answersContainer.innerHTML = "";
+
+    question.a.forEach((answer, index) => {
+
+        const button = document.createElement("button");
+
+        button.className = "answer";
+        button.textContent = answer;
+
+        button.onclick = () => selectAnswer(index, button);
+
+        answersContainer.appendChild(button);
+    });
+
+    timeLeft = 15;
+
+    const timerElement = document.getElementById("timer");
+
+    timerElement.textContent = `${timeLeft}s`;
+    timerElement.className = "timer";
+
+    timer = setInterval(() => {
+
+        timeLeft--;
+
+        timerElement.textContent = `${timeLeft}s`;
+
+        if (timeLeft <= 5) {
+            timerElement.className = "timer danger";
+        } else if (timeLeft <= 10) {
+            timerElement.className = "timer warning";
+        }
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            timeOut();
+        }
+
+    }, 1000);
+}
+
+function selectAnswer(index, clickedButton) {
+
+    clearInterval(timer);
+
+    const question = questions[currentQuestion];
+    const buttons = document.querySelectorAll(".answer");
+
+    buttons.forEach(button => {
+        button.disabled = true;
+    });
+
+    if (index === question.correct) {
+
+        clickedButton.classList.add("correct");
+
+        // Sneller antwoorden = iets meer punten
+        const points = 100 + (timeLeft * 10);
+
+        score += points;
+
+    } else {
+
+        clickedButton.classList.add("wrong");
+        buttons[question.correct].classList.add("correct");
+
+    }
+
+    document.getElementById("score").textContent = score;
+
+    setTimeout(nextQuestion, 1000);
+}
+
+function timeOut() {
+
+    const question = questions[currentQuestion];
+    const buttons = document.querySelectorAll(".answer");
+
+    buttons.forEach(button => {
+        button.disabled = true;
+    });
+
+    buttons[question.correct].classList.add("correct");
+
+    setTimeout(nextQuestion, 1000);
+}
+
+function nextQuestion() {
+
+    currentQuestion++;
+
+    if (currentQuestion >= questions.length) {
+        finishQuiz();
+    } else {
+        showQuestion();
+    }
+}
+
+function finishQuiz() {
+
+    clearInterval(timer);
+
+    document.getElementById("quizScreen").classList.add("hidden");
+    document.getElementById("resultScreen").classList.remove("hidden");
+
+    document.getElementById("finalScore").textContent = score;
+
+    let message;
+
+    if (score >= 1300) {
+        message = "🔥 Geweldige score!";
+    } else if (score >= 900) {
+        message = "😎 Heel goed gedaan!";
+    } else if (score >= 500) {
+        message = "👍 Netjes! Je kunt nog hoger.";
+    } else {
+        message = "💪 Nog een keer proberen!";
+    }
+
+    document.getElementById("resultText").textContent = message;
+
+    if (score > highscore) {
+
+        highscore = score;
+
+        localStorage.setItem("quizHighscore", highscore);
+
+        document.getElementById("highscoreEnd").textContent = highscore;
+
+        document.getElementById("resultText").textContent =
+            "🏆 NIEUWE HIGHSCORE! " + message;
+    }
+}
+
+function goHome() {
+
+    clearInterval(timer);
+
+    document.getElementById("quizScreen").classList.add("hidden");
+    document.getElementById("resultScreen").classList.add("hidden");
+    document.getElementById("startScreen").classList.remove("hidden");
+
+    document.getElementById("highscoreStart").textContent = highscore;
+}
+
+</script>
+
+</body>
+</html>
