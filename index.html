@@ -3,597 +3,308 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>QuizMaster</title>
+<title>Traffic Control</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+    background:#080b12;
+    color:white;
+    font-family:Arial,sans-serif;
+    min-height:100vh;
+    overflow:hidden;
 }
 
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at top left, #3b2b78, transparent 35%),
-        radial-gradient(circle at bottom right, #163b67, transparent 35%),
-        #090b16;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 25px;
-    overflow-x: hidden;
+#game{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
 }
 
-body::before {
-    content: "";
-    position: fixed;
-    width: 500px;
-    height: 500px;
-    background: rgba(124,92,255,.12);
-    border-radius: 50%;
-    filter: blur(100px);
-    animation: float 8s ease-in-out infinite;
-    pointer-events: none;
+canvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
 }
 
-@keyframes float {
-    0%,100% { transform: translate(0,0); }
-    50% { transform: translate(80px,50px); }
+#ui{
+    position:absolute;
+    top:15px;
+    left:15px;
+    right:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    pointer-events:none;
 }
 
-.app {
-    width: 100%;
-    max-width: 900px;
-    position: relative;
-    z-index: 2;
+.panel{
+    background:rgba(8,11,18,.88);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:15px;
+    padding:12px 16px;
+    box-shadow:0 8px 30px #0008;
+    backdrop-filter:blur(10px);
 }
 
-.card {
-    background: rgba(17,19,35,.82);
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 28px;
-    padding: 35px;
-    box-shadow: 0 30px 80px rgba(0,0,0,.45);
-    backdrop-filter: blur(18px);
-    animation: appear .5s ease;
+.stats{
+    display:flex;
+    gap:22px;
 }
 
-@keyframes appear {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.stat small{
+    display:block;
+    color:#8991a3;
+    font-size:11px;
+    text-transform:uppercase;
 }
 
-.logo {
-    text-align: center;
-    font-size: 50px;
-    font-weight: 900;
-    background: linear-gradient(90deg,#8c6cff,#4dd9ff);
-    -webkit-background-clip: text;
-    color: transparent;
-    margin-bottom: 8px;
+.stat strong{
+    font-size:20px;
 }
 
-.subtitle {
-    text-align: center;
-    color: #9da1b8;
-    margin-bottom: 30px;
+#controls{
+    position:absolute;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:10px;
+    background:rgba(8,11,18,.9);
+    padding:10px;
+    border-radius:18px;
+    border:1px solid #ffffff1a;
 }
 
-.categories {
-    display: grid;
-    grid-template-columns: repeat(2,1fr);
-    gap: 15px;
+.lightBtn{
+    border:0;
+    color:white;
+    background:#171d29;
+    border-radius:13px;
+    padding:12px 17px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.15s;
 }
 
-.category {
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 20px;
-    padding: 25px;
-    background: rgba(255,255,255,.05);
-    color: white;
-    cursor: pointer;
-    transition: .25s;
-    text-align: left;
+.lightBtn:hover{
+    background:#273143;
+    transform:translateY(-2px);
 }
 
-.category:hover {
-    transform: translateY(-6px) scale(1.02);
-    background: rgba(255,255,255,.1);
-    border-color: rgba(140,108,255,.5);
-    box-shadow: 0 15px 35px rgba(0,0,0,.25);
+.lightBtn.active{
+    box-shadow:0 0 20px currentColor;
 }
 
-.category-icon {
-    font-size: 40px;
-    margin-bottom: 12px;
+#message{
+    position:absolute;
+    top:90px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#111827ee;
+    padding:12px 20px;
+    border-radius:12px;
+    opacity:0;
+    transition:.25s;
+    pointer-events:none;
 }
 
-.category-title {
-    font-size: 19px;
-    font-weight: bold;
+#message.show{
+    opacity:1;
 }
 
-.category-count {
-    color: #85899f;
-    font-size: 13px;
-    margin-top: 5px;
+#pause{
+    pointer-events:auto;
+    cursor:pointer;
+    border:0;
+    color:white;
+    background:#202938;
+    padding:10px 14px;
+    border-radius:10px;
 }
 
-.menu-buttons {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
+#startScreen,#gameOver{
+    position:absolute;
+    inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:rgba(5,7,12,.88);
+    z-index:10;
 }
 
-.menu-button {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    border-radius: 14px;
-    color: white;
-    background: rgba(255,255,255,.07);
-    cursor: pointer;
-    transition: .2s;
+.modal{
+    width:min(520px,90%);
+    background:#101621;
+    border:1px solid #ffffff18;
+    border-radius:25px;
+    padding:35px;
+    text-align:center;
+    box-shadow:0 30px 100px #000;
 }
 
-.menu-button:hover {
-    background: rgba(255,255,255,.13);
+.logo{
+    font-size:45px;
+    font-weight:900;
+    margin-bottom:8px;
 }
 
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+.logo span{
+    color:#38bdf8;
 }
 
-.question-number {
-    color: #aeb2c7;
+.modal p{
+    color:#9ba4b5;
+    line-height:1.6;
+    margin:15px 0 25px;
 }
 
-.timer {
-    min-width: 65px;
-    text-align: center;
-    padding: 10px 14px;
-    border-radius: 13px;
-    background: rgba(255,255,255,.07);
-    font-weight: bold;
-    transition: .2s;
+.startBtn{
+    border:0;
+    width:100%;
+    padding:16px;
+    border-radius:14px;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    background:linear-gradient(90deg,#2563eb,#06b6d4);
+    cursor:pointer;
 }
 
-.timer.warning {
-    color: #ffc857;
-    animation: pulse .8s infinite;
+.hidden{display:none!important}
+
+#gameOver h2{
+    font-size:35px;
+    margin-bottom:15px;
 }
 
-.timer.danger {
-    color: #ff6262;
-    animation: pulse .45s infinite;
+.finalScore{
+    font-size:55px;
+    font-weight:900;
+    color:#38bdf8;
 }
 
-@keyframes pulse {
-    50% {
-        transform: scale(1.08);
-    }
-}
-
-.progress {
-    height: 9px;
-    border-radius: 20px;
-    background: rgba(255,255,255,.07);
-    overflow: hidden;
-    margin-bottom: 30px;
-}
-
-.progress-fill {
-    height: 100%;
-    width: 0;
-    background: linear-gradient(90deg,#7c5cff,#43d9ff);
-    border-radius: 20px;
-    transition: width .4s ease;
-}
-
-.question {
-    font-size: 30px;
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: 25px;
-    animation: questionIn .35s ease;
-}
-
-@keyframes questionIn {
-    from {
-        opacity: 0;
-        transform: translateX(25px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.answers {
-    display: grid;
-    gap: 13px;
-}
-
-.answer {
-    position: relative;
-    border: 2px solid rgba(255,255,255,.07);
-    border-radius: 16px;
-    padding: 18px;
-    background: rgba(255,255,255,.045);
-    color: white;
-    text-align: left;
-    font-size: 17px;
-    cursor: pointer;
-    transition: .2s;
-    overflow: hidden;
-}
-
-.answer::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);
-    transform: translateX(-100%);
-    transition: .4s;
-}
-
-.answer:hover:not(:disabled)::before {
-    transform: translateX(100%);
-}
-
-.answer:hover:not(:disabled) {
-    transform: translateX(6px);
-    border-color: rgba(124,92,255,.6);
-    background: rgba(124,92,255,.12);
-}
-
-.answer.correct {
-    border-color: #32d583;
-    background: rgba(50,213,131,.15);
-    animation: correct .45s ease;
-}
-
-.answer.wrong {
-    border-color: #ff5555;
-    background: rgba(255,85,85,.15);
-    animation: shake .4s ease;
-}
-
-@keyframes correct {
-    50% {
-        transform: scale(1.03);
-    }
-}
-
-@keyframes shake {
-    25% { transform: translateX(-8px); }
-    50% { transform: translateX(8px); }
-    75% { transform: translateX(-5px); }
-}
-
-.answer:disabled {
-    cursor: default;
-}
-
-.scorebar {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 22px;
-    color: #999db3;
-}
-
-.scorebar strong {
-    color: white;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.result {
-    text-align: center;
-}
-
-.result-icon {
-    font-size: 70px;
-    animation: trophy 1s ease infinite alternate;
-}
-
-@keyframes trophy {
-    to {
-        transform: translateY(-8px) rotate(3deg);
-    }
-}
-
-.result h2 {
-    font-size: 38px;
-    margin: 10px 0;
-}
-
-.final-score {
-    font-size: 65px;
-    font-weight: 900;
-    background: linear-gradient(90deg,#8c6cff,#4dd9ff);
-    -webkit-background-clip: text;
-    color: transparent;
-    margin: 15px 0;
-}
-
-.result-message {
-    color: #a8acc0;
-    margin-bottom: 25px;
-}
-
-.name-input {
-    width: 100%;
-    padding: 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,.1);
-    background: rgba(255,255,255,.06);
-    color: white;
-    outline: none;
-    font-size: 16px;
-    margin-bottom: 12px;
-}
-
-.name-input:focus {
-    border-color: #7c5cff;
-}
-
-.primary-button {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 14px;
-    background: linear-gradient(90deg,#7355ff,#39cfff);
-    color: white;
-    font-weight: bold;
-    font-size: 17px;
-    cursor: pointer;
-    transition: .2s;
-}
-
-.primary-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(92,92,255,.3);
-}
-
-.leaderboard {
-    margin-top: 25px;
-    text-align: left;
-}
-
-.leaderboard h3 {
-    margin-bottom: 12px;
-}
-
-.leader {
-    display: flex;
-    justify-content: space-between;
-    padding: 13px;
-    margin: 6px 0;
-    border-radius: 12px;
-    background: rgba(255,255,255,.05);
-}
-
-.rank {
-    width: 35px;
-    font-weight: bold;
-}
-
-.leader-name {
-    flex: 1;
-}
-
-.leader-score {
-    font-weight: bold;
-}
-
-.back {
-    margin-top: 15px;
-    width: 100%;
-    padding: 13px;
-    border: none;
-    border-radius: 13px;
-    background: rgba(255,255,255,.07);
-    color: white;
-    cursor: pointer;
-}
-
-.confetti {
-    position: fixed;
-    width: 9px;
-    height: 14px;
-    top: -20px;
-    z-index: 100;
-    animation: confettiFall 3s linear forwards;
-}
-
-@keyframes confettiFall {
-    to {
-        transform: translateY(110vh) rotate(720deg);
-        opacity: 0;
-    }
-}
-
-@media(max-width:650px) {
-
-    body {
-        padding: 12px;
-    }
-
-    .card {
-        padding: 22px;
-        border-radius: 22px;
-    }
-
-    .logo {
-        font-size: 38px;
-    }
-
-    .categories {
-        grid-template-columns: 1fr;
-    }
-
-    .question {
-        font-size: 23px;
-    }
-
-    .menu-buttons {
-        flex-direction: column;
-    }
+@media(max-width:700px){
+    .stats{gap:10px}
+    .stat strong{font-size:16px}
+    #controls{flex-wrap:wrap;width:95%;justify-content:center}
+    .lightBtn{padding:10px 12px;font-size:12px}
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div id="game">
 
-<!-- MENU -->
-<div class="card" id="menu">
+<canvas id="canvas"></canvas>
 
-    <div class="logo">QuizMaster</div>
+<div id="ui">
 
-    <p class="subtitle">
-        Test je kennis. Haal punten. Word nummer 1.
-    </p>
+    <div class="panel stats">
+        <div class="stat">
+            <small>Score</small>
+            <strong id="score">0</strong>
+        </div>
 
-    <div class="categories">
+        <div class="stat">
+            <small>Combo</small>
+            <strong id="combo">x1</strong>
+        </div>
 
-        <button class="category" onclick="startQuiz('algemeen')">
-            <div class="category-icon">🧠</div>
-            <div class="category-title">Algemene kennis</div>
-            <div class="category-count">10 vragen</div>
-        </button>
+        <div class="stat">
+            <small>Verkeer</small>
+            <strong id="traffic">0</strong>
+        </div>
 
-        <button class="category" onclick="startQuiz('gaming')">
-            <div class="category-icon">🎮</div>
-            <div class="category-title">Gaming</div>
-            <div class="category-count">10 vragen</div>
-        </button>
-
-        <button class="category" onclick="startQuiz('sport')">
-            <div class="category-icon">🏆</div>
-            <div class="category-title">Sport</div>
-            <div class="category-count">10 vragen</div>
-        </button>
-
-        <button class="category" onclick="startQuiz('technologie')">
-            <div class="category-icon">💻</div>
-            <div class="category-title">Technologie</div>
-            <div class="category-count">10 vragen</div>
-        </button>
-
+        <div class="stat">
+            <small>Dag</small>
+            <strong id="day">☀️</strong>
+        </div>
     </div>
 
-    <div class="menu-buttons">
-        <button class="menu-button" onclick="showLeaderboard()">
-            🏆 Scorebord
-        </button>
-
-        <button class="menu-button" onclick="toggleSound()">
-            🔊 Geluid: <span id="soundStatus">Aan</span>
-        </button>
+    <div class="panel">
+        <button id="pause" onclick="togglePause()">⏸ Pauze</button>
     </div>
 
 </div>
 
+<div id="message"></div>
 
-<!-- QUIZ -->
-<div class="card hidden" id="quiz">
+<div id="controls">
 
-    <div class="topbar">
-
-        <div class="question-number" id="questionNumber">
-            Vraag 1 / 10
-        </div>
-
-        <div class="timer" id="timer">
-            15
-        </div>
-
-    </div>
-
-    <div class="progress">
-        <div class="progress-fill" id="progressFill"></div>
-    </div>
-
-    <div class="question" id="question"></div>
-
-    <div class="answers" id="answers"></div>
-
-    <div class="scorebar">
-        <div>
-            Score: <strong id="score">0</strong>
-        </div>
-
-        <div>
-            Categorie: <strong id="categoryName">-</strong>
-        </div>
-    </div>
-
-</div>
-
-
-<!-- RESULTAAT -->
-<div class="card hidden result" id="result">
-
-    <div class="result-icon">🏆</div>
-
-    <h2>Quiz voltooid!</h2>
-
-    <div class="final-score" id="finalScore">
-        0
-    </div>
-
-    <div class="result-message" id="resultMessage"></div>
-
-    <input
-        class="name-input"
-        id="playerName"
-        maxlength="15"
-        placeholder="Vul je naam in voor het scorebord..."
-    >
-
-    <button class="primary-button" onclick="saveScore()">
-        🏆 Score opslaan
+    <button class="lightBtn" onclick="changeLight('north')">
+        ⬆️ NOORD
     </button>
 
-    <div class="leaderboard" id="resultLeaderboard"></div>
+    <button class="lightBtn" onclick="changeLight('east')">
+        ➡️ OOST
+    </button>
 
-    <button class="back" onclick="goHome()">
-        ← Terug naar menu
+    <button class="lightBtn" onclick="changeLight('south')">
+        ⬇️ ZUID
+    </button>
+
+    <button class="lightBtn" onclick="changeLight('west')">
+        ⬅️ WEST
+    </button>
+
+    <button class="lightBtn" onclick="toggleWeather()">
+        🌧️ Regen
     </button>
 
 </div>
 
 
-<!-- SCOREBORD -->
-<div class="card hidden" id="leaderboardScreen">
+<div id="startScreen">
 
-    <div class="result-icon">🏆</div>
+    <div class="modal">
 
-    <h2 style="text-align:center;">Top 10</h2>
+        <div class="logo">
+            🚦 <span>Traffic</span> Control
+        </div>
 
-    <div class="leaderboard" id="leaderboardList"></div>
+        <p>
+            Jij bent verkeersregelaar.<br>
+            Bedien de verkeerslichten, voorkom botsingen
+            en houd het verkeer zo soepel mogelijk.
+        </p>
 
-    <button class="back" onclick="goHome()">
-        ← Terug naar menu
-    </button>
+        <p>
+            🚑 Ambulances krijgen voorrang.<br>
+            🚛 Vrachtwagens zijn langzamer.<br>
+            📈 Hoe langer je speelt, hoe drukker het wordt.
+        </p>
+
+        <button class="startBtn" onclick="startGame()">
+            🚦 START VERKEERSCENTRALE
+        </button>
+
+    </div>
+
+</div>
+
+
+<div id="gameOver" class="hidden">
+
+    <div class="modal">
+
+        <div style="font-size:60px">💥</div>
+
+        <h2>Verkeerschaos!</h2>
+
+        <div class="finalScore" id="finalScore">0</div>
+
+        <p id="gameOverText"></p>
+
+        <button class="startBtn" onclick="startGame()">
+            🔄 OPNIEUW
+        </button>
+
+    </div>
 
 </div>
 
@@ -602,769 +313,778 @@ body::before {
 
 <script>
 
-/* =========================
-   VRAGEN
-========================= */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-const questionSets = {
+let W,H;
 
-algemeen: [
-
-{
-q:"Wat is de hoofdstad van Nederland?",
-a:["Amsterdam","Rotterdam","Utrecht","Eindhoven"],
-c:0
-},
-
-{
-q:"Hoeveel dagen heeft een normaal jaar?",
-a:["364","365","366","360"],
-c:1
-},
-
-{
-q:"Welke planeet staat het dichtst bij de zon?",
-a:["Mars","Venus","Mercurius","Aarde"],
-c:2
-},
-
-{
-q:"Hoeveel zijden heeft een zeshoek?",
-a:["5","6","7","8"],
-c:1
-},
-
-{
-q:"Wat is H₂O?",
-a:["Zuurstof","Water","Waterstof","Koolstof"],
-c:1
-},
-
-{
-q:"Welke oceaan is het grootst?",
-a:["Atlantische Oceaan","Indische Oceaan","Stille Oceaan","Arctische Oceaan"],
-c:2
-},
-
-{
-q:"Hoeveel minuten zitten er in 2 uur?",
-a:["60","100","120","180"],
-c:2
-},
-
-{
-q:"Welke kleur krijg je door blauw en geel te mengen?",
-a:["Paars","Groen","Oranje","Rood"],
-c:1
-},
-
-{
-q:"Wat is de grootste planeet van ons zonnestelsel?",
-a:["Aarde","Mars","Jupiter","Saturnus"],
-c:2
-},
-
-{
-q:"Hoeveel continenten worden meestal onderscheiden?",
-a:["5","6","7","8"],
-c:1
+function resize(){
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
 }
 
-],
+window.addEventListener("resize",resize);
+resize();
 
-gaming: [
 
-{
-q:"Welke game draait om blokken bouwen en mijnen?",
-a:["Minecraft","Fortnite","Rocket League","Among Us"],
-c:0
-},
+/* ===============================
+   GAME VARIABLES
+================================ */
 
-{
-q:"Wie is de broer van Mario?",
-a:["Luigi","Link","Kirby","Sonic"],
-c:0
-},
+let running=false;
+let paused=false;
 
-{
-q:"Welke game heeft Crewmates?",
-a:["Among Us","Minecraft","Roblox","Terraria"],
-c:0
-},
+let score=0;
+let combo=1;
+let spawnTimer=0;
+let elapsed=0;
 
-{
-q:"Welke game combineert voetbal met auto's?",
-a:["Rocket League","FIFA","Forza Horizon","Trackmania"],
-c:0
-},
+let weather=false;
+let night=false;
 
-{
-q:"Welke console is van Nintendo?",
-a:["Xbox","PlayStation","Switch","Steam Deck"],
-c:2
-},
+let cars=[];
+let particles=[];
 
-{
-q:"Welke studio maakte Minecraft?",
-a:["Mojang","Valve","Ubisoft","EA"],
-c:0
-},
 
-{
-q:"Wat betekent FPS meestal bij games?",
-a:["Frames Per Second","Fast Player System","First Play Score","Free Player Server"],
-c:0
-},
+/* verkeerslicht:
+   0 = rood
+   1 = groen
+*/
 
-{
-q:"Welke game is bekend om de Battle Royale-modus?",
-a:["Fortnite","Portal","Euro Truck Simulator","Cities Skylines"],
-c:0
-},
-
-{
-q:"Welke game bevat de personages Link en Zelda?",
-a:["The Legend of Zelda","Minecraft","Halo","Overwatch"],
-c:0
-},
-
-{
-q:"Welke pc-gamewinkel heeft een grote digitale bibliotheek?",
-a:["Steam","Paint","Notepad","Calculator"],
-c:0
-}
-
-],
-
-sport: [
-
-{
-q:"Hoeveel spelers staan er per voetbalteam op het veld?",
-a:["9","10","11","12"],
-c:2
-},
-
-{
-q:"Welke sport wordt gespeeld op Wimbledon?",
-a:["Tennis","Voetbal","Hockey","Basketbal"],
-c:0
-},
-
-{
-q:"Hoeveel ringen heeft het olympische logo?",
-a:["4","5","6","7"],
-c:1
-},
-
-{
-q:"Welke sport gebruikt een shuttle?",
-a:["Tennis","Badminton","Hockey","Rugby"],
-c:1
-},
-
-{
-q:"Welke sport gebruikt een puck?",
-a:["IJshockey","Basketbal","Golf","Cricket"],
-c:0
-},
-
-{
-q:"Hoe heet de hoogste Nederlandse voetbalcompetitie?",
-a:["Eredivisie","Keuken Kampioen Divisie","Premier League","Bundesliga"],
-c:0
-},
-
-{
-q:"Welke sport gebruikt een basket?",
-a:["Basketbal","Volleybal","Handbal","Honkbal"],
-c:0
-},
-
-{
-q:"Hoeveel punten is een vrije worp bij basketbal waard?",
-a:["1","2","3","4"],
-c:0
-},
-
-{
-q:"Welke sport gebruikt een honkbalknuppel?",
-a:["Honkbal","Rugby","Tennis","Cricket"],
-c:0
-},
-
-{
-q:"In welke sport wordt de Tour de France gereden?",
-a:["Wielrennen","Hardlopen","Motorsport","Schaatsen"],
-c:0
-}
-
-],
-
-technologie: [
-
-{
-q:"Waar staat CPU voor?",
-a:["Central Processing Unit","Computer Power Unit","Central Program Utility","Core Processing User"],
-c:0
-},
-
-{
-q:"Waar staat RAM voor?",
-a:["Random Access Memory","Rapid Action Machine","Read Access Module","Random Application Mode"],
-c:0
-},
-
-{
-q:"Welk bedrijf maakt Windows?",
-a:["Apple","Microsoft","Google","Sony"],
-c:1
-},
-
-{
-q:"Welke taal wordt veel gebruikt voor interactieve websites?",
-a:["JavaScript","Excel","PowerPoint","Photoshop"],
-c:0
-},
-
-{
-q:"Waar staat USB voor?",
-a:["Universal Serial Bus","United System Base","Universal Software Box","User Serial Board"],
-c:0
-},
-
-{
-q:"Welke component verwerkt vooral grafische berekeningen?",
-a:["GPU","RAM","SSD","Voeding"],
-c:0
-},
-
-{
-q:"Wat is een SSD?",
-a:["Een opslagapparaat","Een processor","Een videokaart","Een besturingssysteem"],
-c:0
-},
-
-{
-q:"Welke website wordt veel gebruikt voor programmeerprojecten?",
-a:["GitHub","Netflix","Spotify","TikTok"],
-c:0
-},
-
-{
-q:"Wat is Windows 11?",
-a:["Een browser","Een besturingssysteem","Een game","Een processor"],
-c:1
-},
-
-{
-q:"Welke hiervan is een webbrowser?",
-a:["Chrome","Windows","NVIDIA","Intel"],
-c:0
-}
-
-]
-
+let lights={
+    north:0,
+    east:1,
+    south:0,
+    west:1
 };
 
 
-/* =========================
-   VARIABELEN
-========================= */
+/* ===============================
+   AUDIO
+================================ */
 
-let questions = [];
-let current = 0;
-let score = 0;
-let timeLeft = 15;
-let timer = null;
-let soundEnabled = true;
-let currentCategory = "";
+let audio=null;
 
-let leaderboard =
-    JSON.parse(localStorage.getItem("quizLeaderboard")) || [];
+function beep(freq=500,duration=.08){
+
+    try{
+
+        if(!audio)
+            audio=new AudioContext();
+
+        const osc=audio.createOscillator();
+        const gain=audio.createGain();
+
+        osc.connect(gain);
+        gain.connect(audio.destination);
+
+        osc.frequency.value=freq;
+        osc.type="sine";
+
+        gain.gain.value=.04;
+
+        osc.start();
+
+        setTimeout(()=>{
+            osc.stop();
+        },duration*1000);
+
+    }catch(e){}
+}
 
 
-/* =========================
-   GELUID
-========================= */
+/* ===============================
+   START
+================================ */
 
-let audioContext = null;
+function startGame(){
 
-function sound(type) {
+    if(audio && audio.state==="suspended")
+        audio.resume();
 
-    if (!soundEnabled) return;
+    score=0;
+    combo=1;
+    elapsed=0;
+    spawnTimer=0;
 
-    if (!audioContext) {
-        audioContext =
-            new (window.AudioContext || window.webkitAudioContext)();
+    cars=[];
+    particles=[];
+
+    lights={
+        north:0,
+        east:1,
+        south:0,
+        west:1
+    };
+
+    running=true;
+    paused=false;
+
+    document.getElementById("startScreen")
+        .classList.add("hidden");
+
+    document.getElementById("gameOver")
+        .classList.add("hidden");
+
+    document.getElementById("pause")
+        .textContent="⏸ Pauze";
+
+    updateUI();
+}
+
+
+/* ===============================
+   ROAD
+================================ */
+
+function road(){
+
+    ctx.fillStyle=night ? "#101722" : "#20252c";
+    ctx.fillRect(0,H*.37,W,H*.26);
+
+    ctx.fillRect(W*.37,0,W*.26,H);
+
+    /* middenstrepen */
+
+    ctx.strokeStyle="#c9c9c955";
+    ctx.lineWidth=3;
+    ctx.setLineDash([18,20]);
+
+    ctx.beginPath();
+    ctx.moveTo(0,H*.5);
+    ctx.lineTo(W,H*.5);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(W*.5,0);
+    ctx.lineTo(W*.5,H);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    /* zebrapaden */
+
+    ctx.fillStyle="#ffffff44";
+
+    for(let i=-80;i<80;i+=16){
+
+        ctx.fillRect(
+            W*.37+i,
+            H*.33,
+            8,
+            H*.035
+        );
+
+        ctx.fillRect(
+            W*.63+i,
+            H*.63,
+            8,
+            H*.035
+        );
+    }
+}
+
+
+/* ===============================
+   TRAFFIC LIGHTS
+================================ */
+
+function drawLights(){
+
+    drawLight(W*.5,H*.30,"north",true);
+    drawLight(W*.68,H*.5,"east",false);
+    drawLight(W*.5,H*.70,"south",true);
+    drawLight(W*.30,H*.5,"west",false);
+}
+
+function drawLight(x,y,direction,vertical){
+
+    ctx.save();
+
+    ctx.translate(x,y);
+
+    if(!vertical)
+        ctx.rotate(Math.PI/2);
+
+    ctx.fillStyle="#111";
+    ctx.roundRect(-16,-50,32,100,8);
+    ctx.fill();
+
+    ctx.fillStyle=
+        lights[direction]
+        ? "#38d66b"
+        : "#ff3b3b";
+
+    ctx.shadowBlur=15;
+    ctx.shadowColor=ctx.fillStyle;
+
+    ctx.beginPath();
+    ctx.arc(0,lights[direction]?20:-20,9,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.shadowBlur=0;
+
+    ctx.restore();
+}
+
+
+/* ===============================
+   VEHICLES
+================================ */
+
+function spawnCar(){
+
+    const directions=[
+        "north",
+        "east",
+        "south",
+        "west"
+    ];
+
+    const dir=
+        directions[
+            Math.floor(Math.random()*4)
+        ];
+
+    let type="car";
+
+    const r=Math.random();
+
+    if(r<.08) type="ambulance";
+    else if(r<.18) type="truck";
+
+    const laneOffset=(Math.random()-.5)*45;
+
+    let x,y,vx,vy;
+
+    const speed=
+        type==="truck"
+        ? 1.1
+        : type==="ambulance"
+        ? 2.8
+        : 1.8+Math.random()*1.1;
+
+    if(dir==="north"){
+        x=W*.5+laneOffset;
+        y=-70;
+        vx=0;
+        vy=speed;
     }
 
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
+    if(dir==="south"){
+        x=W*.5+laneOffset;
+        y=H+70;
+        vx=0;
+        vy=-speed;
+    }
 
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
+    if(dir==="east"){
+        x=-70;
+        y=H*.5+laneOffset;
+        vx=speed;
+        vy=0;
+    }
 
-    let frequency = 500;
+    if(dir==="west"){
+        x=W+70;
+        y=H*.5+laneOffset;
+        vx=-speed;
+        vy=0;
+    }
 
-    if (type === "correct") frequency = 750;
-    if (type === "wrong") frequency = 180;
-    if (type === "click") frequency = 450;
-    if (type === "finish") frequency = 900;
-
-    oscillator.frequency.value = frequency;
-    oscillator.type = "sine";
-
-    gain.gain.setValueAtTime(.08,audioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        audioContext.currentTime + .25
-    );
-
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + .25);
-}
-
-function toggleSound() {
-
-    soundEnabled = !soundEnabled;
-
-    document.getElementById("soundStatus").textContent =
-        soundEnabled ? "Aan" : "Uit";
-
-    sound("click");
-}
-
-
-/* =========================
-   QUIZ STARTEN
-========================= */
-
-function startQuiz(category) {
-
-    sound("click");
-
-    currentCategory = category;
-
-    questions = [...questionSets[category]];
-
-    questions.sort(() => Math.random() - .5);
-
-    current = 0;
-    score = 0;
-
-    document.getElementById("menu")
-        .classList.add("hidden");
-
-    document.getElementById("result")
-        .classList.add("hidden");
-
-    document.getElementById("leaderboardScreen")
-        .classList.add("hidden");
-
-    document.getElementById("quiz")
-        .classList.remove("hidden");
-
-    document.getElementById("categoryName")
-        .textContent =
-        category.charAt(0).toUpperCase() + category.slice(1);
-
-    showQuestion();
-}
-
-
-/* =========================
-   VRAAG TONEN
-========================= */
-
-function showQuestion() {
-
-    clearInterval(timer);
-
-    const q = questions[current];
-
-    document.getElementById("questionNumber")
-        .textContent =
-        `Vraag ${current + 1} / ${questions.length}`;
-
-    document.getElementById("progressFill")
-        .style.width =
-        `${(current / questions.length) * 100}%`;
-
-    const questionElement =
-        document.getElementById("question");
-
-    questionElement.style.animation = "none";
-    void questionElement.offsetWidth;
-    questionElement.style.animation =
-        "questionIn .35s ease";
-
-    questionElement.textContent = q.q;
-
-    const answers =
-        document.getElementById("answers");
-
-    answers.innerHTML = "";
-
-    q.a.forEach((answer,index) => {
-
-        const button =
-            document.createElement("button");
-
-        button.className = "answer";
-        button.textContent = answer;
-
-        button.onclick = () =>
-            selectAnswer(index,button);
-
-        answers.appendChild(button);
+    cars.push({
+        x,y,vx,vy,
+        speed,
+        baseSpeed:speed,
+        dir,
+        type,
+        stopped:false,
+        crossed:false,
+        angle:Math.atan2(vy,vx)
     });
-
-    startTimer();
 }
 
 
-/* =========================
-   TIMER
-========================= */
+/* ===============================
+   UPDATE CARS
+================================ */
 
-function startTimer() {
+function updateCars(){
 
-    timeLeft = 15;
+    for(let i=cars.length-1;i>=0;i--){
 
-    const timerElement =
-        document.getElementById("timer");
+        const c=cars[i];
 
-    timerElement.textContent =
-        timeLeft;
+        let allowed=lights[c.dir]===1;
 
-    timerElement.className = "timer";
+        /* ambulances kunnen door */
+        if(c.type==="ambulance")
+            allowed=true;
 
-    timer = setInterval(() => {
+        const centerX=W*.5;
+        const centerY=H*.5;
 
-        timeLeft--;
+        let nearCenter=false;
 
-        timerElement.textContent =
-            timeLeft;
+        if(c.dir==="north")
+            nearCenter=
+                c.y>centerY-160 &&
+                c.y<centerY-20;
 
-        if (timeLeft <= 10) {
-            timerElement.className =
-                "timer warning";
+        if(c.dir==="south")
+            nearCenter=
+                c.y<centerY+160 &&
+                c.y>centerY+20;
+
+        if(c.dir==="east")
+            nearCenter=
+                c.x<centerX+160 &&
+                c.x>centerX+20;
+
+        if(c.dir==="west")
+            nearCenter=
+                c.x>centerX-160 &&
+                c.x<centerX-20;
+
+        if(nearCenter && !allowed){
+
+            c.vx*=.94;
+            c.vy*=.94;
+
+            c.stopped=true;
+
+        }else{
+
+            c.vx +=
+                (Math.cos(c.angle)*c.baseSpeed-c.vx)*.08;
+
+            c.vy +=
+                (Math.sin(c.angle)*c.baseSpeed-c.vy)*.08;
+
+            c.stopped=false;
         }
 
-        if (timeLeft <= 5) {
-            timerElement.className =
-                "timer danger";
+        c.x+=c.vx;
+        c.y+=c.vy;
+
+        /* punten als voertuig kruispunt verlaat */
+
+        const outside=
+            c.x<-100 ||
+            c.x>W+100 ||
+            c.y<-100 ||
+            c.y>H+100;
+
+        if(outside){
+
+            if(c.crossed){
+                score+=20*combo;
+                combo=Math.min(combo+0.05,8);
+            }
+
+            cars.splice(i,1);
         }
 
-        if (timeLeft <= 0) {
-
-            clearInterval(timer);
-
-            timeOut();
+        if(
+            !c.crossed &&
+            Math.abs(c.x-centerX)<50 &&
+            Math.abs(c.y-centerY)<50
+        ){
+            c.crossed=true;
         }
-
-    },1000);
-}
-
-
-/* =========================
-   ANTWOORD
-========================= */
-
-function selectAnswer(index,button) {
-
-    clearInterval(timer);
-
-    const q = questions[current];
-
-    const buttons =
-        document.querySelectorAll(".answer");
-
-    buttons.forEach(b => b.disabled = true);
-
-    if (index === q.c) {
-
-        button.classList.add("correct");
-
-        const points =
-            100 + (timeLeft * 10);
-
-        score += points;
-
-        sound("correct");
-
-    } else {
-
-        button.classList.add("wrong");
-
-        buttons[q.c]
-            .classList.add("correct");
-
-        sound("wrong");
-    }
-
-    document.getElementById("score")
-        .textContent = score;
-
-    setTimeout(nextQuestion,900);
-}
-
-
-/* =========================
-   TIJD OP
-========================= */
-
-function timeOut() {
-
-    const q = questions[current];
-
-    const buttons =
-        document.querySelectorAll(".answer");
-
-    buttons.forEach(b => b.disabled = true);
-
-    buttons[q.c]
-        .classList.add("correct");
-
-    sound("wrong");
-
-    setTimeout(nextQuestion,900);
-}
-
-
-/* =========================
-   VOLGENDE
-========================= */
-
-function nextQuestion() {
-
-    current++;
-
-    if (current >= questions.length) {
-
-        finishQuiz();
-
-    } else {
-
-        showQuestion();
     }
 }
 
 
-/* =========================
-   QUIZ KLAAR
-========================= */
+/* ===============================
+   COLLISION
+================================ */
 
-function finishQuiz() {
+function collisionCheck(){
 
-    clearInterval(timer);
+    for(let i=0;i<cars.length;i++){
 
-    sound("finish");
+        for(let j=i+1;j<cars.length;j++){
 
-    document.getElementById("quiz")
-        .classList.add("hidden");
+            const a=cars[i];
+            const b=cars[j];
 
-    document.getElementById("result")
-        .classList.remove("hidden");
+            const dx=a.x-b.x;
+            const dy=a.y-b.y;
+
+            const dist=Math.sqrt(dx*dx+dy*dy);
+
+            if(dist<30){
+
+                /* alleen echte bewegende conflicten */
+
+                if(
+                    Math.abs(a.vx-b.vx)>1 ||
+                    Math.abs(a.vy-b.vy)>1
+                ){
+
+                    crash(a.x,a.y);
+
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+
+/* ===============================
+   CRASH
+================================ */
+
+function crash(x,y){
+
+    beep(90,.4);
+
+    for(let i=0;i<30;i++){
+
+        particles.push({
+            x,
+            y,
+            vx:(Math.random()-.5)*6,
+            vy:(Math.random()-.5)*6,
+            life:1
+        });
+    }
+
+    running=false;
 
     document.getElementById("finalScore")
-        .textContent = score;
+        .textContent=Math.floor(score);
 
-    let message = "";
+    document.getElementById("gameOverText")
+        .textContent=
+        `Je eindigde met een combo van x${combo.toFixed(1)}.`;
 
-    if (score >= 1800) {
-        message = "🔥 LEGENDARISCH! Jij bent echt goed.";
-    }
-    else if (score >= 1400) {
-        message = "🏆 Geweldige score!";
-    }
-    else if (score >= 1000) {
-        message = "😎 Heel netjes!";
-    }
-    else if (score >= 600) {
-        message = "👍 Goed bezig!";
-    }
-    else {
-        message = "💪 Nog een keer proberen!";
-    }
-
-    document.getElementById("resultMessage")
-        .textContent = message;
-
-    createConfetti();
-
-    renderLeaderboard(
-        document.getElementById("resultLeaderboard")
-    );
-}
-
-
-/* =========================
-   SCORE OPSLAAN
-========================= */
-
-function saveScore() {
-
-    const input =
-        document.getElementById("playerName");
-
-    let name =
-        input.value.trim();
-
-    if (!name) {
-        name = "Speler";
-    }
-
-    leaderboard.push({
-        name: name.substring(0,15),
-        score: score
-    });
-
-    leaderboard.sort((a,b) =>
-        b.score - a.score
-    );
-
-    leaderboard =
-        leaderboard.slice(0,10);
-
-    localStorage.setItem(
-        "quizLeaderboard",
-        JSON.stringify(leaderboard)
-    );
-
-    input.value = "";
-
-    sound("finish");
-
-    renderLeaderboard(
-        document.getElementById("resultLeaderboard")
-    );
-}
-
-
-/* =========================
-   SCOREBORD
-========================= */
-
-function showLeaderboard() {
-
-    sound("click");
-
-    document.getElementById("menu")
-        .classList.add("hidden");
-
-    document.getElementById("leaderboardScreen")
+    document.getElementById("gameOver")
         .classList.remove("hidden");
-
-    renderLeaderboard(
-        document.getElementById("leaderboardList")
-    );
 }
 
-function renderLeaderboard(container) {
 
-    if (!leaderboard.length) {
+/* ===============================
+   DRAW CARS
+================================ */
 
-        container.innerHTML =
-            "<p style='color:#999db3;text-align:center;'>Nog geen scores. Word de eerste!</p>";
+function drawCars(){
 
-        return;
-    }
+    cars.forEach(c=>{
 
-    container.innerHTML =
-        "<h3>Top 10 spelers</h3>";
+        ctx.save();
 
-    leaderboard.forEach((player,index) => {
+        ctx.translate(c.x,c.y);
+        ctx.rotate(c.angle);
 
-        const row =
-            document.createElement("div");
+        let color="#3b82f6";
 
-        row.className = "leader";
+        if(c.type==="truck")
+            color="#f59e0b";
 
-        let medal = "";
+        if(c.type==="ambulance")
+            color="#f1f5f9";
 
-        if (index === 0) medal = "🥇";
-        else if (index === 1) medal = "🥈";
-        else if (index === 2) medal = "🥉";
-        else medal = `${index + 1}.`;
+        ctx.fillStyle=color;
 
-        row.innerHTML = `
-            <div class="rank">${medal}</div>
-            <div class="leader-name">${escapeHTML(player.name)}</div>
-            <div class="leader-score">${player.score}</div>
-        `;
+        const width=
+            c.type==="truck" ? 45 : 32;
 
-        container.appendChild(row);
+        const height=
+            c.type==="truck" ? 22 : 16;
+
+        ctx.fillRect(
+            -width/2,
+            -height/2,
+            width,
+            height
+        );
+
+        /* ramen */
+
+        ctx.fillStyle="#111827";
+
+        ctx.fillRect(
+            -width*.2,
+            -height*.35,
+            width*.35,
+            height*.7
+        );
+
+        /* ambulance */
+
+        if(c.type==="ambulance"){
+
+            ctx.fillStyle="#ef4444";
+
+            ctx.fillRect(
+                -5,-2,
+                10,4
+            );
+
+            ctx.fillRect(
+                -2,-7,
+                4,14
+            );
+        }
+
+        ctx.restore();
     });
 }
 
 
-/* =========================
-   VEILIG TEKST TONEN
-========================= */
+/* ===============================
+   PARTICLES
+================================ */
 
-function escapeHTML(text) {
+function updateParticles(){
 
-    return text
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+    particles.forEach(p=>{
+
+        p.x+=p.vx;
+        p.y+=p.vy;
+
+        p.vy+=.08;
+
+        p.life-=.025;
+    });
+
+    particles=
+        particles.filter(p=>p.life>0);
+}
+
+function drawParticles(){
+
+    particles.forEach(p=>{
+
+        ctx.globalAlpha=p.life;
+
+        ctx.fillStyle="#ffb703";
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            5,
+            5
+        );
+    });
+
+    ctx.globalAlpha=1;
 }
 
 
-/* =========================
-   CONFETTI
-========================= */
+/* ===============================
+   RAIN
+================================ */
 
-function createConfetti() {
+function drawRain(){
 
-    for (let i = 0; i < 80; i++) {
+    if(!weather)return;
 
-        const piece =
-            document.createElement("div");
+    ctx.strokeStyle="#7dd3fc55";
+    ctx.lineWidth=1;
 
-        piece.className = "confetti";
+    for(let i=0;i<100;i++){
 
-        piece.style.left =
-            Math.random() * 100 + "vw";
+        const x=Math.random()*W;
+        const y=Math.random()*H;
 
-        piece.style.animationDelay =
-            Math.random() * 1.5 + "s";
+        ctx.beginPath();
 
-        piece.style.transform =
-            `rotate(${Math.random()*360}deg)`;
+        ctx.moveTo(x,y);
+        ctx.lineTo(x-4,y+15);
 
-        document.body.appendChild(piece);
-
-        setTimeout(() => {
-            piece.remove();
-        },4000);
+        ctx.stroke();
     }
 }
 
 
-/* =========================
-   TERUG NAAR MENU
-========================= */
+/* ===============================
+   CHANGE LIGHT
+================================ */
 
-function goHome() {
+function changeLight(direction){
 
-    clearInterval(timer);
+    if(!running)return;
 
-    document.getElementById("quiz")
-        .classList.add("hidden");
+    beep(500,.08);
 
-    document.getElementById("result")
-        .classList.add("hidden");
+    /* maak de richting groen,
+       tegenoverliggende richting blijft rood */
 
-    document.getElementById("leaderboardScreen")
-        .classList.add("hidden");
+    lights.north=0;
+    lights.east=0;
+    lights.south=0;
+    lights.west=0;
 
-    document.getElementById("menu")
-        .classList.remove("hidden");
+    lights[direction]=1;
+
+    showMessage(
+        `🚦 ${direction.toUpperCase()} heeft groen`
+    );
 }
+
+
+/* ===============================
+   WEATHER
+================================ */
+
+function toggleWeather(){
+
+    weather=!weather;
+
+    showMessage(
+        weather
+        ? "🌧️ Regen ingeschakeld"
+        : "☀️ Regen uitgeschakeld"
+    );
+}
+
+
+/* ===============================
+   PAUSE
+================================ */
+
+function togglePause(){
+
+    if(!running)return;
+
+    paused=!paused;
+
+    document.getElementById("pause")
+        .textContent=
+        paused
+        ? "▶️ Verder"
+        : "⏸ Pauze";
+}
+
+
+/* ===============================
+   MESSAGE
+================================ */
+
+let messageTimer;
+
+function showMessage(text){
+
+    const el=document.getElementById("message");
+
+    el.textContent=text;
+
+    el.classList.add("show");
+
+    clearTimeout(messageTimer);
+
+    messageTimer=setTimeout(()=>{
+        el.classList.remove("show");
+    },1200);
+}
+
+
+/* ===============================
+   UI
+================================ */
+
+function updateUI(){
+
+    document.getElementById("score")
+        .textContent=Math.floor(score);
+
+    document.getElementById("combo")
+        .textContent="x"+combo.toFixed(1);
+
+    document.getElementById("traffic")
+        .textContent=cars.length;
+
+    document.getElementById("day")
+        .textContent=night?"🌙":"☀️";
+}
+
+
+/* ===============================
+   GAME LOOP
+================================ */
+
+let last=performance.now();
+
+function loop(now){
+
+    const dt=Math.min(
+        (now-last)/16.67,
+        2
+    );
+
+    last=now;
+
+    ctx.clearRect(0,0,W,H);
+
+    /* achtergrond */
+
+    ctx.fillStyle=
+        night
+        ? "#0b1320"
+        : "#1b2633";
+
+    ctx.fillRect(0,0,W,H);
+
+    road();
+
+    if(running && !paused){
+
+        elapsed+=dt;
+
+        spawnTimer+=dt;
+
+        /* steeds drukker */
+
+        const spawnRate=
+            Math.max(
+                38,
+                100-elapsed*.015
+            );
+
+        if(spawnTimer>spawnRate){
+
+            spawnTimer=0;
+
+            spawnCar();
+
+            /* soms extra auto */
+
+            if(Math.random()<.15)
+                spawnCar();
+        }
+
+        updateCars();
+
+        if(collisionCheck())
+            return;
+
+        updateParticles();
+
+        /* dag/nacht */
+
+        if(Math.floor(elapsed/900)%2===1)
+            night=true;
+        else
+            night=false;
+    }
+
+    drawCars();
+    drawLights();
+    drawParticles();
+    drawRain();
+
+    updateUI();
+
+    requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
 
 </script>
 
