@@ -3,1088 +3,1054 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Traffic Control</title>
+<title>Bartronic DJ Manager</title>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-
-body{
-    background:#080b12;
-    color:white;
-    font-family:Arial,sans-serif;
-    min-height:100vh;
-    overflow:hidden;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-#game{
-    position:relative;
-    width:100vw;
-    height:100vh;
-    overflow:hidden;
+body {
+    font-family: Arial, sans-serif;
+    background: #0b0d12;
+    color: #fff;
+    min-height: 100vh;
 }
 
-canvas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
+header {
+    height: 70px;
+    background: #11141b;
+    border-bottom: 1px solid #292e3a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-#ui{
-    position:absolute;
-    top:15px;
-    left:15px;
-    right:15px;
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    pointer-events:none;
+.logo {
+    font-size: 22px;
+    font-weight: bold;
 }
 
-.panel{
-    background:rgba(8,11,18,.88);
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:15px;
-    padding:12px 16px;
-    box-shadow:0 8px 30px #0008;
-    backdrop-filter:blur(10px);
+.logo span {
+    color: #7c5cff;
 }
 
-.stats{
-    display:flex;
-    gap:22px;
+.header-right {
+    color: #999;
+    font-size: 14px;
 }
 
-.stat small{
-    display:block;
-    color:#8991a3;
-    font-size:11px;
-    text-transform:uppercase;
+.layout {
+    display: flex;
+    min-height: calc(100vh - 70px);
 }
 
-.stat strong{
-    font-size:20px;
+.sidebar {
+    width: 230px;
+    background: #101219;
+    border-right: 1px solid #292e3a;
+    padding: 20px 12px;
 }
 
-#controls{
-    position:absolute;
-    bottom:18px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:10px;
-    background:rgba(8,11,18,.9);
-    padding:10px;
-    border-radius:18px;
-    border:1px solid #ffffff1a;
+.nav-title {
+    color: #666;
+    font-size: 11px;
+    text-transform: uppercase;
+    margin: 15px 12px 8px;
 }
 
-.lightBtn{
-    border:0;
-    color:white;
-    background:#171d29;
-    border-radius:13px;
-    padding:12px 17px;
-    cursor:pointer;
-    font-weight:bold;
-    transition:.15s;
+.nav button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: #aaa;
+    padding: 13px 14px;
+    text-align: left;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    font-size: 14px;
 }
 
-.lightBtn:hover{
-    background:#273143;
-    transform:translateY(-2px);
+.nav button:hover,
+.nav button.active {
+    background: #1d1b31;
+    color: #fff;
 }
 
-.lightBtn.active{
-    box-shadow:0 0 20px currentColor;
+.main {
+    flex: 1;
+    padding: 30px;
+    max-width: 1500px;
 }
 
-#message{
-    position:absolute;
-    top:90px;
-    left:50%;
-    transform:translateX(-50%);
-    background:#111827ee;
-    padding:12px 20px;
-    border-radius:12px;
-    opacity:0;
-    transition:.25s;
-    pointer-events:none;
+.page {
+    display: none;
 }
 
-#message.show{
-    opacity:1;
+.page.active {
+    display: block;
 }
 
-#pause{
-    pointer-events:auto;
-    cursor:pointer;
-    border:0;
-    color:white;
-    background:#202938;
-    padding:10px 14px;
-    border-radius:10px;
+.page-title {
+    font-size: 28px;
+    margin-bottom: 7px;
 }
 
-#startScreen,#gameOver{
-    position:absolute;
-    inset:0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:rgba(5,7,12,.88);
-    z-index:10;
+.subtitle {
+    color: #888;
+    margin-bottom: 25px;
 }
 
-.modal{
-    width:min(520px,90%);
-    background:#101621;
-    border:1px solid #ffffff18;
-    border-radius:25px;
-    padding:35px;
-    text-align:center;
-    box-shadow:0 30px 100px #000;
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
-.logo{
-    font-size:45px;
-    font-weight:900;
-    margin-bottom:8px;
+.card {
+    background: #11141b;
+    border: 1px solid #292e3a;
+    border-radius: 12px;
+    padding: 20px;
 }
 
-.logo span{
-    color:#38bdf8;
+.card-label {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 10px;
 }
 
-.modal p{
-    color:#9ba4b5;
-    line-height:1.6;
-    margin:15px 0 25px;
+.card-value {
+    font-size: 27px;
+    font-weight: bold;
 }
 
-.startBtn{
-    border:0;
-    width:100%;
-    padding:16px;
-    border-radius:14px;
-    color:white;
-    font-size:17px;
-    font-weight:bold;
-    background:linear-gradient(90deg,#2563eb,#06b6d4);
-    cursor:pointer;
+.card-small {
+    color: #6f6;
+    font-size: 12px;
+    margin-top: 8px;
 }
 
-.hidden{display:none!important}
-
-#gameOver h2{
-    font-size:35px;
-    margin-bottom:15px;
+.panel {
+    background: #11141b;
+    border: 1px solid #292e3a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
-.finalScore{
-    font-size:55px;
-    font-weight:900;
-    color:#38bdf8;
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
 }
 
-@media(max-width:700px){
-    .stats{gap:10px}
-    .stat strong{font-size:16px}
-    #controls{flex-wrap:wrap;width:95%;justify-content:center}
-    .lightBtn{padding:10px 12px;font-size:12px}
+.panel h2 {
+    font-size: 18px;
+}
+
+button.primary {
+    background: #7c5cff;
+    color: white;
+    border: 0;
+    border-radius: 7px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button.primary:hover {
+    background: #6948ed;
+}
+
+button.danger {
+    background: #3a1820;
+    color: #ff7588;
+    border: 1px solid #63303a;
+    border-radius: 6px;
+    padding: 7px 10px;
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    color: #777;
+    font-size: 12px;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #292e3a;
+}
+
+td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #20242e;
+    font-size: 14px;
+}
+
+.status {
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    background: #193521;
+    color: #79e28d;
+}
+
+.empty {
+    text-align: center;
+    color: #666;
+    padding: 35px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+label {
+    color: #999;
+    font-size: 13px;
+}
+
+input,
+select,
+textarea {
+    background: #0b0d12;
+    border: 1px solid #303642;
+    color: white;
+    border-radius: 7px;
+    padding: 11px;
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #7c5cff;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+.actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.checklist {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.check {
+    background: #0d1016;
+    border: 1px solid #252a34;
+    border-radius: 8px;
+    padding: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.check input {
+    width: 17px;
+    height: 17px;
+}
+
+.equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.equipment {
+    background: #0d1016;
+    border: 1px solid #292e3a;
+    border-radius: 10px;
+    padding: 18px;
+}
+
+.equipment-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.equipment h3 {
+    margin-bottom: 6px;
+}
+
+.equipment p {
+    color: #888;
+    font-size: 13px;
+}
+
+.money {
+    color: #70df87;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-box {
+    background: #11141b;
+    border: 1px solid #303642;
+    border-radius: 14px;
+    width: min(650px, 92%);
+    padding: 25px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.close {
+    background: none;
+    border: 0;
+    color: #888;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.toast {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #171b24;
+    border: 1px solid #353b48;
+    padding: 13px 18px;
+    border-radius: 8px;
+    display: none;
+    z-index: 100;
+}
+
+.toast.show {
+    display: block;
+}
+
+@media(max-width: 900px) {
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .equipment-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width: 650px) {
+    .sidebar {
+        width: 65px;
+    }
+
+    .sidebar .nav-title {
+        display: none;
+    }
+
+    .nav button {
+        font-size: 0;
+        text-align: center;
+    }
+
+    .nav button::first-letter {
+        font-size: 20px;
+    }
+
+    .main {
+        padding: 18px;
+    }
+
+    .cards,
+    .form-grid,
+    .checklist,
+    .equipment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    table {
+        min-width: 650px;
+    }
+
+    .panel {
+        overflow-x: auto;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div id="game">
+<header>
+    <div class="logo">BARTRONIC <span>DJ MANAGER</span></div>
+    <div class="header-right">Professional DJ Management</div>
+</header>
 
-<canvas id="canvas"></canvas>
+<div class="layout">
 
-<div id="ui">
+<aside class="sidebar">
+    <div class="nav">
+        <div class="nav-title">Overzicht</div>
 
-    <div class="panel stats">
-        <div class="stat">
-            <small>Score</small>
-            <strong id="score">0</strong>
-        </div>
-
-        <div class="stat">
-            <small>Combo</small>
-            <strong id="combo">x1</strong>
-        </div>
-
-        <div class="stat">
-            <small>Verkeer</small>
-            <strong id="traffic">0</strong>
-        </div>
-
-        <div class="stat">
-            <small>Dag</small>
-            <strong id="day">☀️</strong>
-        </div>
-    </div>
-
-    <div class="panel">
-        <button id="pause" onclick="togglePause()">⏸ Pauze</button>
-    </div>
-
-</div>
-
-<div id="message"></div>
-
-<div id="controls">
-
-    <button class="lightBtn" onclick="changeLight('north')">
-        ⬆️ NOORD
-    </button>
-
-    <button class="lightBtn" onclick="changeLight('east')">
-        ➡️ OOST
-    </button>
-
-    <button class="lightBtn" onclick="changeLight('south')">
-        ⬇️ ZUID
-    </button>
-
-    <button class="lightBtn" onclick="changeLight('west')">
-        ⬅️ WEST
-    </button>
-
-    <button class="lightBtn" onclick="toggleWeather()">
-        🌧️ Regen
-    </button>
-
-</div>
-
-
-<div id="startScreen">
-
-    <div class="modal">
-
-        <div class="logo">
-            🚦 <span>Traffic</span> Control
-        </div>
-
-        <p>
-            Jij bent verkeersregelaar.<br>
-            Bedien de verkeerslichten, voorkom botsingen
-            en houd het verkeer zo soepel mogelijk.
-        </p>
-
-        <p>
-            🚑 Ambulances krijgen voorrang.<br>
-            🚛 Vrachtwagens zijn langzamer.<br>
-            📈 Hoe langer je speelt, hoe drukker het wordt.
-        </p>
-
-        <button class="startBtn" onclick="startGame()">
-            🚦 START VERKEERSCENTRALE
+        <button class="active" onclick="showPage('dashboard', this)">
+            📊 Dashboard
         </button>
 
-    </div>
-
-</div>
-
-
-<div id="gameOver" class="hidden">
-
-    <div class="modal">
-
-        <div style="font-size:60px">💥</div>
-
-        <h2>Verkeerschaos!</h2>
-
-        <div class="finalScore" id="finalScore">0</div>
-
-        <p id="gameOverText"></p>
-
-        <button class="startBtn" onclick="startGame()">
-            🔄 OPNIEUW
+        <button onclick="showPage('events', this)">
+            🎧 Optredens
         </button>
 
+        <button onclick="showPage('finance', this)">
+            💰 Financiën
+        </button>
+
+        <div class="nav-title">Materiaal</div>
+
+        <button onclick="showPage('equipment', this)">
+            🎛️ Apparatuur
+        </button>
+
+        <button onclick="showPage('checklist', this)">
+            ✅ Checklist
+        </button>
     </div>
+</aside>
+
+<main class="main">
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="page active">
+
+<h1 class="page-title">Dashboard</h1>
+<p class="subtitle">Welkom bij jouw DJ Management systeem.</p>
+
+<div class="cards">
+
+<div class="card">
+    <div class="card-label">Totale omzet</div>
+    <div class="card-value money" id="totalRevenue">€0</div>
+    <div class="card-small">Alle optredens</div>
+</div>
+
+<div class="card">
+    <div class="card-label">Optredens</div>
+    <div class="card-value" id="eventCount">0</div>
+    <div class="card-small">Geregistreerd</div>
+</div>
+
+<div class="card">
+    <div class="card-label">Komend optreden</div>
+    <div class="card-value" id="nextEvent">Geen</div>
+    <div class="card-small">Planning</div>
+</div>
+
+<div class="card">
+    <div class="card-label">Apparatuur</div>
+    <div class="card-value" id="equipmentCount">6</div>
+    <div class="card-small">Items</div>
+</div>
+
+</div>
+
+<div class="panel">
+<div class="panel-header">
+    <h2>Komende optredens</h2>
+    <button class="primary" onclick="openEventModal()">+ Optreden</button>
+</div>
+
+<div id="dashboardEvents"></div>
+</div>
+
+</section>
+
+
+<!-- EVENTS -->
+<section id="events" class="page">
+
+<h1 class="page-title">Optredens</h1>
+<p class="subtitle">Beheer al je boekingen en opdrachten.</p>
+
+<div class="panel">
+
+<div class="panel-header">
+    <h2>Alle optredens</h2>
+    <button class="primary" onclick="openEventModal()">+ Nieuw optreden</button>
+</div>
+
+<div style="overflow-x:auto">
+<table>
+<thead>
+<tr>
+<th>Datum</th>
+<th>Evenement</th>
+<th>Locatie</th>
+<th>Klant</th>
+<th>Prijs</th>
+<th>Status</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="eventsTable"></tbody>
+
+</table>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- FINANCE -->
+<section id="finance" class="page">
+
+<h1 class="page-title">Financiën</h1>
+<p class="subtitle">Overzicht van je inkomsten uit DJ-opdrachten.</p>
+
+<div class="cards">
+
+<div class="card">
+<div class="card-label">Totale omzet</div>
+<div class="card-value money" id="financeRevenue">€0</div>
+</div>
+
+<div class="card">
+<div class="card-label">Gemiddeld optreden</div>
+<div class="card-value" id="averageRevenue">€0</div>
+</div>
+
+<div class="card">
+<div class="card-label">Aantal boekingen</div>
+<div class="card-value" id="financeEvents">0</div>
+</div>
+
+<div class="card">
+<div class="card-label">Hoogste opdracht</div>
+<div class="card-value" id="highestRevenue">€0</div>
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="panel-header">
+<h2>Financieel overzicht</h2>
+</div>
+
+<div id="financeList"></div>
+
+</div>
+
+</section>
+
+
+<!-- EQUIPMENT -->
+<section id="equipment" class="page">
+
+<h1 class="page-title">Apparatuur</h1>
+<p class="subtitle">Overzicht van jouw DJ- en eventmateriaal.</p>
+
+<div class="equipment-grid">
+
+<div class="equipment">
+<div class="equipment-icon">🎧</div>
+<h3>Pioneer DDJ-FLX4</h3>
+<p>DJ Controller</p>
+</div>
+
+<div class="equipment">
+<div class="equipment-icon">🔊</div>
+<h3>Devine Axeo 10</h3>
+<p>Actieve speaker</p>
+</div>
+
+<div class="equipment">
+<div class="equipment-icon">🔊</div>
+<h3>Devine Artis 12A</h3>
+<p>Actieve speaker</p>
+</div>
+
+<div class="equipment">
+<div class="equipment-icon">🎤</div>
+<h3>Vonyx CM300S</h3>
+<p>XLR microfoon</p>
+</div>
+
+<div class="equipment">
+<div class="equipment-icon">💡</div>
+<h3>DMX verlichting</h3>
+<p>Event lighting</p>
+</div>
+
+<div class="equipment">
+<div class="equipment-icon">🌫️</div>
+<h3>F500VL</h3>
+<p>Verticale rookmachine</p>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- CHECKLIST -->
+<section id="checklist" class="page">
+
+<h1 class="page-title">Optreed Checklist</h1>
+<p class="subtitle">Controleer je materiaal voordat je vertrekt.</p>
+
+<div class="panel">
+
+<div class="panel-header">
+<h2>Voor vertrek</h2>
+<button class="primary" onclick="resetChecklist()">Reset</button>
+</div>
+
+<div class="checklist">
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="controller">
+DJ Controller
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="speakers">
+Speakers
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="microphone">
+Microfoon
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="laptop">
+Laptop / PC
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="usb">
+USB-kabels
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="power">
+Stroomkabels
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="lights">
+Verlichting
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="dmx">
+DMX-kabels
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="fog">
+Rookmachine
+</label>
+
+<label class="check">
+<input type="checkbox" onchange="saveChecklist()" data-check="fluid">
+Rookvloeistof
+</label>
 
 </div>
 
 </div>
+
+</section>
+
+</main>
+</div>
+
+
+<!-- EVENT MODAL -->
+
+<div class="modal" id="eventModal">
+
+<div class="modal-box">
+
+<div class="modal-header">
+<h2>Nieuw optreden</h2>
+<button class="close" onclick="closeEventModal()">×</button>
+</div>
+
+<div class="form-grid">
+
+<div class="form-group">
+<label>Datum</label>
+<input type="date" id="eventDate">
+</div>
+
+<div class="form-group">
+<label>Tijd</label>
+<input type="time" id="eventTime">
+</div>
+
+<div class="form-group">
+<label>Evenement</label>
+<input type="text" id="eventName" placeholder="Bijv. Verjaardagsfeest">
+</div>
+
+<div class="form-group">
+<label>Locatie</label>
+<input type="text" id="eventLocation" placeholder="Bijv. Doetinchem">
+</div>
+
+<div class="form-group">
+<label>Klant</label>
+<input type="text" id="eventClient" placeholder="Naam klant">
+</div>
+
+<div class="form-group">
+<label>Prijs (€)</label>
+<input type="number" id="eventPrice" placeholder="100">
+</div>
+
+<div class="form-group full">
+<label>Notities</label>
+<textarea id="eventNotes" placeholder="Extra informatie..."></textarea>
+</div>
+
+</div>
+
+<div class="actions">
+<button class="primary" onclick="addEvent()">Opslaan</button>
+<button class="danger" onclick="closeEventModal()">Annuleren</button>
+</div>
+
+</div>
+</div>
+
+<div class="toast" id="toast">Opgeslagen!</div>
 
 
 <script>
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+let events = JSON.parse(localStorage.getItem("bartronic_events")) || [];
 
-let W,H;
-
-function resize(){
-    W=canvas.width=window.innerWidth;
-    H=canvas.height=window.innerHeight;
+function saveEvents() {
+    localStorage.setItem("bartronic_events", JSON.stringify(events));
 }
 
-window.addEventListener("resize",resize);
-resize();
+function showPage(page, button) {
 
+    document.querySelectorAll(".page").forEach(p => {
+        p.classList.remove("active");
+    });
 
-/* ===============================
-   GAME VARIABLES
-================================ */
+    document.getElementById(page).classList.add("active");
 
-let running=false;
-let paused=false;
+    document.querySelectorAll(".nav button").forEach(b => {
+        b.classList.remove("active");
+    });
 
-let score=0;
-let combo=1;
-let spawnTimer=0;
-let elapsed=0;
+    button.classList.add("active");
 
-let weather=false;
-let night=false;
-
-let cars=[];
-let particles=[];
-
-
-/* verkeerslicht:
-   0 = rood
-   1 = groen
-*/
-
-let lights={
-    north:0,
-    east:1,
-    south:0,
-    west:1
-};
-
-
-/* ===============================
-   AUDIO
-================================ */
-
-let audio=null;
-
-function beep(freq=500,duration=.08){
-
-    try{
-
-        if(!audio)
-            audio=new AudioContext();
-
-        const osc=audio.createOscillator();
-        const gain=audio.createGain();
-
-        osc.connect(gain);
-        gain.connect(audio.destination);
-
-        osc.frequency.value=freq;
-        osc.type="sine";
-
-        gain.gain.value=.04;
-
-        osc.start();
-
-        setTimeout(()=>{
-            osc.stop();
-        },duration*1000);
-
-    }catch(e){}
+    updateUI();
 }
 
+function openEventModal() {
+    document.getElementById("eventModal").classList.add("show");
+}
 
-/* ===============================
-   START
-================================ */
+function closeEventModal() {
+    document.getElementById("eventModal").classList.remove("show");
+}
 
-function startGame(){
+function addEvent() {
 
-    if(audio && audio.state==="suspended")
-        audio.resume();
+    const name = document.getElementById("eventName").value.trim();
 
-    score=0;
-    combo=1;
-    elapsed=0;
-    spawnTimer=0;
+    if (!name) {
+        alert("Vul minimaal de naam van het optreden in.");
+        return;
+    }
 
-    cars=[];
-    particles=[];
-
-    lights={
-        north:0,
-        east:1,
-        south:0,
-        west:1
+    const event = {
+        id: Date.now(),
+        date: document.getElementById("eventDate").value,
+        time: document.getElementById("eventTime").value,
+        name: name,
+        location: document.getElementById("eventLocation").value,
+        client: document.getElementById("eventClient").value,
+        price: Number(document.getElementById("eventPrice").value) || 0,
+        notes: document.getElementById("eventNotes").value
     };
 
-    running=true;
-    paused=false;
+    events.push(event);
 
-    document.getElementById("startScreen")
-        .classList.add("hidden");
+    events.sort((a,b) => {
+        return new Date(a.date + "T" + (a.time || "00:00")) -
+               new Date(b.date + "T" + (b.time || "00:00"));
+    });
 
-    document.getElementById("gameOver")
-        .classList.add("hidden");
+    saveEvents();
 
-    document.getElementById("pause")
-        .textContent="⏸ Pauze";
+    document.getElementById("eventName").value = "";
+    document.getElementById("eventLocation").value = "";
+    document.getElementById("eventClient").value = "";
+    document.getElementById("eventPrice").value = "";
+    document.getElementById("eventNotes").value = "";
+
+    closeEventModal();
+
+    showToast("Optreden opgeslagen!");
 
     updateUI();
 }
 
+function deleteEvent(id) {
 
-/* ===============================
-   ROAD
-================================ */
+    if (!confirm("Dit optreden verwijderen?")) return;
 
-function road(){
+    events = events.filter(event => event.id !== id);
 
-    ctx.fillStyle=night ? "#101722" : "#20252c";
-    ctx.fillRect(0,H*.37,W,H*.26);
-
-    ctx.fillRect(W*.37,0,W*.26,H);
-
-    /* middenstrepen */
-
-    ctx.strokeStyle="#c9c9c955";
-    ctx.lineWidth=3;
-    ctx.setLineDash([18,20]);
-
-    ctx.beginPath();
-    ctx.moveTo(0,H*.5);
-    ctx.lineTo(W,H*.5);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(W*.5,0);
-    ctx.lineTo(W*.5,H);
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-
-    /* zebrapaden */
-
-    ctx.fillStyle="#ffffff44";
-
-    for(let i=-80;i<80;i+=16){
-
-        ctx.fillRect(
-            W*.37+i,
-            H*.33,
-            8,
-            H*.035
-        );
-
-        ctx.fillRect(
-            W*.63+i,
-            H*.63,
-            8,
-            H*.035
-        );
-    }
-}
-
-
-/* ===============================
-   TRAFFIC LIGHTS
-================================ */
-
-function drawLights(){
-
-    drawLight(W*.5,H*.30,"north",true);
-    drawLight(W*.68,H*.5,"east",false);
-    drawLight(W*.5,H*.70,"south",true);
-    drawLight(W*.30,H*.5,"west",false);
-}
-
-function drawLight(x,y,direction,vertical){
-
-    ctx.save();
-
-    ctx.translate(x,y);
-
-    if(!vertical)
-        ctx.rotate(Math.PI/2);
-
-    ctx.fillStyle="#111";
-    ctx.roundRect(-16,-50,32,100,8);
-    ctx.fill();
-
-    ctx.fillStyle=
-        lights[direction]
-        ? "#38d66b"
-        : "#ff3b3b";
-
-    ctx.shadowBlur=15;
-    ctx.shadowColor=ctx.fillStyle;
-
-    ctx.beginPath();
-    ctx.arc(0,lights[direction]?20:-20,9,0,Math.PI*2);
-    ctx.fill();
-
-    ctx.shadowBlur=0;
-
-    ctx.restore();
-}
-
-
-/* ===============================
-   VEHICLES
-================================ */
-
-function spawnCar(){
-
-    const directions=[
-        "north",
-        "east",
-        "south",
-        "west"
-    ];
-
-    const dir=
-        directions[
-            Math.floor(Math.random()*4)
-        ];
-
-    let type="car";
-
-    const r=Math.random();
-
-    if(r<.08) type="ambulance";
-    else if(r<.18) type="truck";
-
-    const laneOffset=(Math.random()-.5)*45;
-
-    let x,y,vx,vy;
-
-    const speed=
-        type==="truck"
-        ? 1.1
-        : type==="ambulance"
-        ? 2.8
-        : 1.8+Math.random()*1.1;
-
-    if(dir==="north"){
-        x=W*.5+laneOffset;
-        y=-70;
-        vx=0;
-        vy=speed;
-    }
-
-    if(dir==="south"){
-        x=W*.5+laneOffset;
-        y=H+70;
-        vx=0;
-        vy=-speed;
-    }
-
-    if(dir==="east"){
-        x=-70;
-        y=H*.5+laneOffset;
-        vx=speed;
-        vy=0;
-    }
-
-    if(dir==="west"){
-        x=W+70;
-        y=H*.5+laneOffset;
-        vx=-speed;
-        vy=0;
-    }
-
-    cars.push({
-        x,y,vx,vy,
-        speed,
-        baseSpeed:speed,
-        dir,
-        type,
-        stopped:false,
-        crossed:false,
-        angle:Math.atan2(vy,vx)
-    });
-}
-
-
-/* ===============================
-   UPDATE CARS
-================================ */
-
-function updateCars(){
-
-    for(let i=cars.length-1;i>=0;i--){
-
-        const c=cars[i];
-
-        let allowed=lights[c.dir]===1;
-
-        /* ambulances kunnen door */
-        if(c.type==="ambulance")
-            allowed=true;
-
-        const centerX=W*.5;
-        const centerY=H*.5;
-
-        let nearCenter=false;
-
-        if(c.dir==="north")
-            nearCenter=
-                c.y>centerY-160 &&
-                c.y<centerY-20;
-
-        if(c.dir==="south")
-            nearCenter=
-                c.y<centerY+160 &&
-                c.y>centerY+20;
-
-        if(c.dir==="east")
-            nearCenter=
-                c.x<centerX+160 &&
-                c.x>centerX+20;
-
-        if(c.dir==="west")
-            nearCenter=
-                c.x>centerX-160 &&
-                c.x<centerX-20;
-
-        if(nearCenter && !allowed){
-
-            c.vx*=.94;
-            c.vy*=.94;
-
-            c.stopped=true;
-
-        }else{
-
-            c.vx +=
-                (Math.cos(c.angle)*c.baseSpeed-c.vx)*.08;
-
-            c.vy +=
-                (Math.sin(c.angle)*c.baseSpeed-c.vy)*.08;
-
-            c.stopped=false;
-        }
-
-        c.x+=c.vx;
-        c.y+=c.vy;
-
-        /* punten als voertuig kruispunt verlaat */
-
-        const outside=
-            c.x<-100 ||
-            c.x>W+100 ||
-            c.y<-100 ||
-            c.y>H+100;
-
-        if(outside){
-
-            if(c.crossed){
-                score+=20*combo;
-                combo=Math.min(combo+0.05,8);
-            }
-
-            cars.splice(i,1);
-        }
-
-        if(
-            !c.crossed &&
-            Math.abs(c.x-centerX)<50 &&
-            Math.abs(c.y-centerY)<50
-        ){
-            c.crossed=true;
-        }
-    }
-}
-
-
-/* ===============================
-   COLLISION
-================================ */
-
-function collisionCheck(){
-
-    for(let i=0;i<cars.length;i++){
-
-        for(let j=i+1;j<cars.length;j++){
-
-            const a=cars[i];
-            const b=cars[j];
-
-            const dx=a.x-b.x;
-            const dy=a.y-b.y;
-
-            const dist=Math.sqrt(dx*dx+dy*dy);
-
-            if(dist<30){
-
-                /* alleen echte bewegende conflicten */
-
-                if(
-                    Math.abs(a.vx-b.vx)>1 ||
-                    Math.abs(a.vy-b.vy)>1
-                ){
-
-                    crash(a.x,a.y);
-
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
-
-
-/* ===============================
-   CRASH
-================================ */
-
-function crash(x,y){
-
-    beep(90,.4);
-
-    for(let i=0;i<30;i++){
-
-        particles.push({
-            x,
-            y,
-            vx:(Math.random()-.5)*6,
-            vy:(Math.random()-.5)*6,
-            life:1
-        });
-    }
-
-    running=false;
-
-    document.getElementById("finalScore")
-        .textContent=Math.floor(score);
-
-    document.getElementById("gameOverText")
-        .textContent=
-        `Je eindigde met een combo van x${combo.toFixed(1)}.`;
-
-    document.getElementById("gameOver")
-        .classList.remove("hidden");
-}
-
-
-/* ===============================
-   DRAW CARS
-================================ */
-
-function drawCars(){
-
-    cars.forEach(c=>{
-
-        ctx.save();
-
-        ctx.translate(c.x,c.y);
-        ctx.rotate(c.angle);
-
-        let color="#3b82f6";
-
-        if(c.type==="truck")
-            color="#f59e0b";
-
-        if(c.type==="ambulance")
-            color="#f1f5f9";
-
-        ctx.fillStyle=color;
-
-        const width=
-            c.type==="truck" ? 45 : 32;
-
-        const height=
-            c.type==="truck" ? 22 : 16;
-
-        ctx.fillRect(
-            -width/2,
-            -height/2,
-            width,
-            height
-        );
-
-        /* ramen */
-
-        ctx.fillStyle="#111827";
-
-        ctx.fillRect(
-            -width*.2,
-            -height*.35,
-            width*.35,
-            height*.7
-        );
-
-        /* ambulance */
-
-        if(c.type==="ambulance"){
-
-            ctx.fillStyle="#ef4444";
-
-            ctx.fillRect(
-                -5,-2,
-                10,4
-            );
-
-            ctx.fillRect(
-                -2,-7,
-                4,14
-            );
-        }
-
-        ctx.restore();
-    });
-}
-
-
-/* ===============================
-   PARTICLES
-================================ */
-
-function updateParticles(){
-
-    particles.forEach(p=>{
-
-        p.x+=p.vx;
-        p.y+=p.vy;
-
-        p.vy+=.08;
-
-        p.life-=.025;
-    });
-
-    particles=
-        particles.filter(p=>p.life>0);
-}
-
-function drawParticles(){
-
-    particles.forEach(p=>{
-
-        ctx.globalAlpha=p.life;
-
-        ctx.fillStyle="#ffb703";
-
-        ctx.fillRect(
-            p.x,
-            p.y,
-            5,
-            5
-        );
-    });
-
-    ctx.globalAlpha=1;
-}
-
-
-/* ===============================
-   RAIN
-================================ */
-
-function drawRain(){
-
-    if(!weather)return;
-
-    ctx.strokeStyle="#7dd3fc55";
-    ctx.lineWidth=1;
-
-    for(let i=0;i<100;i++){
-
-        const x=Math.random()*W;
-        const y=Math.random()*H;
-
-        ctx.beginPath();
-
-        ctx.moveTo(x,y);
-        ctx.lineTo(x-4,y+15);
-
-        ctx.stroke();
-    }
-}
-
-
-/* ===============================
-   CHANGE LIGHT
-================================ */
-
-function changeLight(direction){
-
-    if(!running)return;
-
-    beep(500,.08);
-
-    /* maak de richting groen,
-       tegenoverliggende richting blijft rood */
-
-    lights.north=0;
-    lights.east=0;
-    lights.south=0;
-    lights.west=0;
-
-    lights[direction]=1;
-
-    showMessage(
-        `🚦 ${direction.toUpperCase()} heeft groen`
-    );
-}
-
-
-/* ===============================
-   WEATHER
-================================ */
-
-function toggleWeather(){
-
-    weather=!weather;
-
-    showMessage(
-        weather
-        ? "🌧️ Regen ingeschakeld"
-        : "☀️ Regen uitgeschakeld"
-    );
-}
-
-
-/* ===============================
-   PAUSE
-================================ */
-
-function togglePause(){
-
-    if(!running)return;
-
-    paused=!paused;
-
-    document.getElementById("pause")
-        .textContent=
-        paused
-        ? "▶️ Verder"
-        : "⏸ Pauze";
-}
-
-
-/* ===============================
-   MESSAGE
-================================ */
-
-let messageTimer;
-
-function showMessage(text){
-
-    const el=document.getElementById("message");
-
-    el.textContent=text;
-
-    el.classList.add("show");
-
-    clearTimeout(messageTimer);
-
-    messageTimer=setTimeout(()=>{
-        el.classList.remove("show");
-    },1200);
-}
-
-
-/* ===============================
-   UI
-================================ */
-
-function updateUI(){
-
-    document.getElementById("score")
-        .textContent=Math.floor(score);
-
-    document.getElementById("combo")
-        .textContent="x"+combo.toFixed(1);
-
-    document.getElementById("traffic")
-        .textContent=cars.length;
-
-    document.getElementById("day")
-        .textContent=night?"🌙":"☀️";
-}
-
-
-/* ===============================
-   GAME LOOP
-================================ */
-
-let last=performance.now();
-
-function loop(now){
-
-    const dt=Math.min(
-        (now-last)/16.67,
-        2
-    );
-
-    last=now;
-
-    ctx.clearRect(0,0,W,H);
-
-    /* achtergrond */
-
-    ctx.fillStyle=
-        night
-        ? "#0b1320"
-        : "#1b2633";
-
-    ctx.fillRect(0,0,W,H);
-
-    road();
-
-    if(running && !paused){
-
-        elapsed+=dt;
-
-        spawnTimer+=dt;
-
-        /* steeds drukker */
-
-        const spawnRate=
-            Math.max(
-                38,
-                100-elapsed*.015
-            );
-
-        if(spawnTimer>spawnRate){
-
-            spawnTimer=0;
-
-            spawnCar();
-
-            /* soms extra auto */
-
-            if(Math.random()<.15)
-                spawnCar();
-        }
-
-        updateCars();
-
-        if(collisionCheck())
-            return;
-
-        updateParticles();
-
-        /* dag/nacht */
-
-        if(Math.floor(elapsed/900)%2===1)
-            night=true;
-        else
-            night=false;
-    }
-
-    drawCars();
-    drawLights();
-    drawParticles();
-    drawRain();
+    saveEvents();
 
     updateUI();
 
-    requestAnimationFrame(loop);
+    showToast("Optreden verwijderd.");
 }
 
-requestAnimationFrame(loop);
+function formatDate(date) {
+
+    if (!date) return "-";
+
+    const d = new Date(date + "T00:00:00");
+
+    return d.toLocaleDateString("nl-NL", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+}
+
+function euro(amount) {
+    return new Intl.NumberFormat("nl-NL", {
+        style: "currency",
+        currency: "EUR"
+    }).format(amount);
+}
+
+function updateUI() {
+
+    const total = events.reduce((sum, e) => sum + e.price, 0);
+
+    document.getElementById("totalRevenue").textContent = euro(total);
+    document.getElementById("financeRevenue").textContent = euro(total);
+
+    document.getElementById("eventCount").textContent = events.length;
+    document.getElementById("financeEvents").textContent = events.length;
+
+    const average = events.length ? total / events.length : 0;
+
+    document.getElementById("averageRevenue").textContent = euro(average);
+
+    const highest = events.length
+        ? Math.max(...events.map(e => e.price))
+        : 0;
+
+    document.getElementById("highestRevenue").textContent = euro(highest);
+
+    if (events.length) {
+        document.getElementById("nextEvent").textContent =
+            formatDate(events[0].date);
+    } else {
+        document.getElementById("nextEvent").textContent = "Geen";
+    }
+
+    document.getElementById("eventsTable").innerHTML =
+        events.length
+        ? events.map(event => `
+        <tr>
+            <td>${formatDate(event.date)}<br>
+                <span style="color:#777">${event.time || ""}</span>
+            </td>
+
+            <td><strong>${escapeHTML(event.name)}</strong></td>
+
+            <td>${escapeHTML(event.location || "-")}</td>
+
+            <td>${escapeHTML(event.client || "-")}</td>
+
+            <td class="money">${euro(event.price)}</td>
+
+            <td><span class="status">Gepland</span></td>
+
+            <td>
+                <button class="danger"
+                onclick="deleteEvent(${event.id})">
+                Verwijder
+                </button>
+            </td>
+        </tr>
+        `).join("")
+        : `<tr><td colspan="7" class="empty">
+            Nog geen optredens.
+        </td></tr>`;
+
+    document.getElementById("dashboardEvents").innerHTML =
+        events.length
+        ? `
+        <table>
+        <thead>
+        <tr>
+        <th>Datum</th>
+        <th>Evenement</th>
+        <th>Locatie</th>
+        <th>Prijs</th>
+        </tr>
+        </thead>
+        <tbody>
+        ${events.slice(0,5).map(event => `
+        <tr>
+        <td>${formatDate(event.date)}</td>
+        <td>${escapeHTML(event.name)}</td>
+        <td>${escapeHTML(event.location || "-")}</td>
+        <td class="money">${euro(event.price)}</td>
+        </tr>
+        `).join("")}
+        </tbody>
+        </table>
+        `
+        : `<div class="empty">Je hebt nog geen optredens toegevoegd.</div>`;
+
+    document.getElementById("financeList").innerHTML =
+        events.length
+        ? events.map(event => `
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            padding:14px 0;
+            border-bottom:1px solid #252a34;
+        ">
+            <div>
+                <strong>${escapeHTML(event.name)}</strong>
+                <div style="color:#777;font-size:12px">
+                    ${formatDate(event.date)}
+                </div>
+            </div>
+            <strong class="money">${euro(event.price)}</strong>
+        </div>
+        `).join("")
+        : `<div class="empty">Nog geen financiële gegevens.</div>`;
+}
+
+function escapeHTML(text) {
+
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+// CHECKLIST
+
+function saveChecklist() {
+
+    const checks = {};
+
+    document.querySelectorAll("[data-check]").forEach(input => {
+        checks[input.dataset.check] = input.checked;
+    });
+
+    localStorage.setItem(
+        "bartronic_checklist",
+        JSON.stringify(checks)
+    );
+
+    showToast("Checklist opgeslagen!");
+}
+
+function loadChecklist() {
+
+    const checks =
+        JSON.parse(localStorage.getItem("bartronic_checklist")) || {};
+
+    document.querySelectorAll("[data-check]").forEach(input => {
+
+        input.checked = !!checks[input.dataset.check];
+
+    });
+}
+
+function resetChecklist() {
+
+    document.querySelectorAll("[data-check]").forEach(input => {
+        input.checked = false;
+    });
+
+    saveChecklist();
+
+    showToast("Checklist gereset.");
+}
+
+
+// TOAST
+
+function showToast(message) {
+
+    const toast = document.getElementById("toast");
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
+
+
+// START
+
+loadChecklist();
+updateUI();
 
 </script>
 
